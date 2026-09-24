@@ -1,9 +1,10 @@
 # LeaseLurker
 
 LeaseLurker ist ein ausschließlich lesendes Webinterface für aktive IPv4-Leases
-eines Kea-DHCP-Servers. Enduser können anhand eines Hostname- oder
+eines Kea-DHCP-Servers. Enduser können anhand eines Hostname-, IP- oder
 MAC-Adressfragments die aktuelle IP-Adresse ihres Rechners ermitteln. Die
-Listenansicht gruppiert freigegebene Leases nach Subnetz.
+Listenansicht stellt freigegebene Subnetze als Tabs dar und unterstützt ein
+automatisches sowie manuell umschaltbares helles und dunkles Farbschema.
 
 > **Hinweis zum Projektstatus:** LeaseLurker ist ein Arbeitsprojekt, das im
 > Rahmen der beruflichen Tätigkeit am Karlsruher Institut für Technologie (KIT)

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import time
-from collections import defaultdict
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -19,7 +18,6 @@ from fastapi.templating import Jinja2Templates
 from lease_lurker import __version__
 from lease_lurker.i18n import select_locale, translator
 from lease_lurker.kea import KeaProvider
-from lease_lurker.models import LeaseView
 from lease_lurker.providers import CompositeDeviceNameResolver
 from lease_lurker.service import LeaseService, SnapshotUnavailableError
 from lease_lurker.settings import Settings, load_settings
@@ -75,12 +73,17 @@ def create_app(
     app.mount("/static", StaticFiles(directory=PACKAGE_DIR / "static"), name="static")
 
     async def render_leases(
-        request: Request, query: str, page: int, force: bool = False
+        request: Request,
+        query: str,
+        page: int,
+        subnet: int | None = None,
+        force: bool = False,
     ) -> HTMLResponse:
         return await _render_leases(
             request=request,
             query=query,
             page=page,
+            subnet=subnet,
             force=force,
             service=lease_service,
             settings=configured,
@@ -96,11 +99,16 @@ def create_app(
         request: Request,
         q: str = Query(default="", max_length=100),
         page: int = Query(default=1, ge=1),
+        subnet: int | None = Query(default=None, ge=1),
     ) -> HTMLResponse:
-        return await render_leases(request, q, page)
+        return await render_leases(request, q, page, subnet)
 
     @app.post("/refresh")
-    async def refresh(request: Request, q: str = Form(default="")) -> RedirectResponse:
+    async def refresh(
+        request: Request,
+        q: str = Form(default=""),
+        subnet: int | None = Form(default=None, ge=1),
+    ) -> RedirectResponse:
         now = time.monotonic()
         if now - app.state.last_manual_refresh >= 5:
             app.state.last_manual_refresh = now
@@ -108,9 +116,7 @@ def create_app(
                 await lease_service.snapshot(force=True)
             except SnapshotUnavailableError:
                 LOGGER.warning("Manual lease refresh failed")
-        target = "/leases"
-        if q:
-            target = f"{target}?{urlencode({'q': q})}"
+        target = _lease_url(q, subnet)
         return RedirectResponse(target, status_code=303)
 
     @app.get("/locale/{locale}")
@@ -144,6 +150,7 @@ async def _render_leases(
     request: Request,
     query: str,
     page: int,
+    subnet: int | None,
     force: bool,
     service: LeaseService,
     settings: Settings,
@@ -164,10 +171,12 @@ async def _render_leases(
             context={"locale": locale, "t": translate},
             status_code=503,
         )
-    result = service.search(snapshot_result.snapshot, query, page)
-    groups: dict[str, list[LeaseView]] = defaultdict(list)
-    for item in result.items:
-        groups[f"{item.subnet.name} ({item.subnet.prefix})"].append(item)
+    subnets = snapshot_result.snapshot.subnets
+    visible_ids = {item.id for item in subnets}
+    selected_subnet = subnet if subnet in visible_ids else None
+    result = service.search(
+        snapshot_result.snapshot, query, page, subnet_id=selected_subnet
+    )
     now = datetime.now(snapshot_result.snapshot.refreshed_at.tzinfo)
     return templates.TemplateResponse(
         request=request,
@@ -177,8 +186,21 @@ async def _render_leases(
             "t": translate,
             "query": query,
             "result": result,
-            "groups": groups,
+            "subnets": subnets,
+            "selected_subnet": selected_subnet,
+            "lease_url": _lease_url,
             "snapshot": snapshot_result,
             "now": now,
         },
     )
+
+
+def _lease_url(query: str, subnet: int | None = None, page: int = 1) -> str:
+    parameters: dict[str, str | int] = {}
+    if query:
+        parameters["q"] = query
+    if subnet is not None:
+        parameters["subnet"] = subnet
+    if page > 1:
+        parameters["page"] = page
+    return f"/leases?{urlencode(parameters)}" if parameters else "/leases"

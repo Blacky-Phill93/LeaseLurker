@@ -34,6 +34,11 @@ async def test_snapshot_filters_and_enriches(settings, now) -> None:
     assert result.snapshot.leases[0].vendor == "Example Vendor"
     assert result.snapshot.leases[1].lease.mac_address is None
     assert result.snapshot.leases[1].vendor is None
+    assert [(item.id, item.name) for item in result.snapshot.subnets] == [
+        (1, "Office"),
+        (3, "Lab"),
+    ]
+    assert provider.requested_subnet_ids == [1, 3]
     assert provider.calls == 1
     assert (await service.snapshot()).snapshot is result.snapshot
 
@@ -55,6 +60,33 @@ async def test_search_normalizes_mac_and_paginates(settings, now) -> None:
     assert second_page.total == 12
     assert len(second_page.items) == 2
     assert service.search(snapshot, "x", 1).total == 0
+
+
+async def test_searches_ip_fragments_and_filters_by_subnet(settings, now) -> None:
+    provider = FakeProvider(
+        [
+            make_lease(now, ip="192.0.2.42"),
+            make_lease(
+                now,
+                ip="203.0.113.17",
+                hostname="lab-client",
+                mac="00:11:22:33:44:66",
+                subnet_id=3,
+            ),
+        ]
+    )
+    service = LeaseService(
+        provider, settings, VendorLookup({}), NoNames(), clock=lambda: now
+    )
+    snapshot = (await service.snapshot()).snapshot
+
+    assert service.search(snapshot, "0.113", 1).total == 1
+    assert service.search(snapshot, "0.113", 1).items[0].lease.ip_address == (
+        "203.0.113.17"
+    )
+    assert service.search(snapshot, "", 1, subnet_id=1).total == 1
+    assert service.search(snapshot, "", 1, subnet_id=3).total == 1
+    assert service.search(snapshot, "1", 1).total == 0
 
 
 async def test_stale_snapshot_is_served_then_expires(settings, now) -> None:

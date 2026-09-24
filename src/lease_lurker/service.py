@@ -100,20 +100,25 @@ class LeaseService:
         return self._snapshot
 
     async def _build_snapshot(self, now: datetime) -> LeaseSnapshot:
-        visible_ids = set(self._settings.visible_subnet_ids)
+        visible_id_list = self._settings.visible_subnet_ids
         all_subnets, leases = await asyncio.gather(
             self._provider.get_subnets(),
-            self._provider.get_leases(sorted(visible_ids)),
+            self._provider.get_leases(visible_id_list),
         )
         overrides = self._settings.subnet_name_overrides
-        subnets = {
-            subnet.id: Subnet(
+        discovered_subnets = {subnet.id: subnet for subnet in all_subnets}
+        visible_subnets = tuple(
+            Subnet(
                 id=subnet.id,
                 prefix=subnet.prefix,
                 name=overrides.get(subnet.id, subnet.name),
             )
-            for subnet in all_subnets
-            if subnet.id in visible_ids
+            for subnet_id in visible_id_list
+            if (subnet := discovered_subnets.get(subnet_id)) is not None
+        )
+        subnets = {subnet.id: subnet for subnet in visible_subnets}
+        subnet_order = {
+            subnet.id: index for index, subnet in enumerate(visible_subnets)
         }
         views = []
         for lease in leases:
@@ -136,27 +141,39 @@ class LeaseService:
                 )
             )
         views.sort(
-            key=lambda view: (view.subnet.name.casefold(), view.lease.ip_address)
+            key=lambda view: (
+                subnet_order[view.subnet.id],
+                view.lease.ip_address,
+            )
         )
-        return LeaseSnapshot(leases=tuple(views), refreshed_at=now)
+        return LeaseSnapshot(
+            leases=tuple(views), subnets=visible_subnets, refreshed_at=now
+        )
 
-    def search(self, snapshot: LeaseSnapshot, query: str, page: int) -> SearchPage:
+    def search(
+        self,
+        snapshot: LeaseSnapshot,
+        query: str,
+        page: int,
+        subnet_id: int | None = None,
+    ) -> SearchPage:
         cleaned = query.strip().casefold()
         mac_fragment = "".join(char for char in cleaned if char in "0123456789abcdef")
-        matches: tuple[LeaseView, ...]
-        if not cleaned:
-            matches = snapshot.leases
-        else:
-            matches = tuple(
-                view
-                for view in snapshot.leases
-                if (len(cleaned) >= 2 and cleaned in view.lease.hostname.casefold())
+        matches = tuple(
+            view
+            for view in snapshot.leases
+            if (subnet_id is None or view.subnet.id == subnet_id)
+            and (
+                not cleaned
+                or (len(cleaned) >= 2 and cleaned in view.lease.hostname.casefold())
+                or (len(cleaned) >= 2 and cleaned in view.lease.ip_address)
                 or (
                     len(mac_fragment) >= 4
                     and view.lease.mac_address is not None
                     and mac_fragment in view.lease.mac_address.replace(":", "")
                 )
             )
+        )
         page_size = self._settings.web.page_size
         pages = max(1, ceil(len(matches) / page_size))
         selected_page = min(max(page, 1), pages)

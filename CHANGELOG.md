@@ -6,6 +6,21 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-24
+
+### Hinzugefügt
+
+- Suche nach vollständigen und partiellen IPv4-Adressen.
+- Subnetz-Tabs mit einer gemeinsamen Ansicht aller freigegebenen Leases.
+- Automatischer Darkmode anhand der Systemeinstellung und ein lokal
+  gespeicherter manueller Theme-Umschalter.
+
+### Geändert
+
+- Freigegebene Subnetze bleiben auch ohne aktive Leases als Tabs sichtbar.
+- Suche, Pagination und manuelle Aktualisierung erhalten den aktiven
+  Subnetzkontext in der URL.
+
 ## [0.1.6] - 2026-09-24
 
 ### Sicherheit
@@ -78,7 +93,8 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 - Non-Root-Container, Compose-Konfiguration und lokaler Kea-Entwicklungsmock.
 - GitHub-CI für Formatierung, Linting, Typprüfung, Tests, Security und Image-Build.
 
-[Unreleased]: https://github.com/Phill93/LeaseLurker/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/Phill93/LeaseLurker/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Phill93/LeaseLurker/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Phill93/LeaseLurker/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Phill93/LeaseLurker/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Phill93/LeaseLurker/compare/v0.1.3...v0.1.4

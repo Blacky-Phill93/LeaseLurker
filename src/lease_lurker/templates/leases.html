@@ -5,7 +5,8 @@
     <h1>{{ t("search_placeholder") }}</h1>
     <form action="/leases" method="get" class="search-form" role="search">
       <label class="sr-only" for="q">{{ t("search") }}</label>
-      <input id="q" name="q" value="{{ query }}" maxlength="100" autocomplete="off" placeholder="pc-042 · 00:1a:2b…">
+      {% if selected_subnet %}<input type="hidden" name="subnet" value="{{ selected_subnet }}">{% endif %}
+      <input id="q" name="q" value="{{ query }}" maxlength="100" autocomplete="off" placeholder="pc-042 · 172.22.218 · 00:1a:2b…">
       <button type="submit">{{ t("search") }}</button>
     </form>
   </section>
@@ -16,6 +17,13 @@
     </aside>
   {% endif %}
 
+  <nav class="subnet-tabs" aria-label="{{ t('subnet_navigation') }}">
+    <a href="{{ lease_url(query) }}"{% if selected_subnet is none %} aria-current="page"{% endif %}>{{ t("all_leases") }}</a>
+    {% for subnet in subnets %}
+      <a href="{{ lease_url(query, subnet.id) }}"{% if selected_subnet == subnet.id %} aria-current="page"{% endif %}>{{ subnet.name }} <span>{{ subnet.prefix }}</span></a>
+    {% endfor %}
+  </nav>
+
   <section class="result-header">
     <div>
       <p class="eyebrow">{{ t("results") }}</p>
@@ -23,6 +31,7 @@
     </div>
     <form action="/refresh" method="post">
       <input type="hidden" name="q" value="{{ query }}">
+      {% if selected_subnet %}<input type="hidden" name="subnet" value="{{ selected_subnet }}">{% endif %}
       <button class="secondary" type="submit">↻ {{ t("refresh") }}</button>
     </form>
   </section>
@@ -31,24 +40,25 @@
     <div class="empty">{{ t("no_results") }}</div>
   {% endif %}
 
-  {% for group, leases in groups.items() %}
-    <section class="subnet-group">
-      <h3>{{ group }}</h3>
+  {% if result.items %}
+    <section class="lease-results">
       <div class="table-wrap">
         <table>
           <thead><tr>
             <th>{{ t("hostname") }}</th>
             <th>{{ t("ip_address") }}</th>
+            {% if selected_subnet is none %}<th>{{ t("subnet") }}</th>{% endif %}
             <th>{{ t("mac_address") }}</th>
             <th>{{ t("vendor") }}</th>
             <th>{{ t("expires") }}</th>
             <th>{{ t("remaining") }}</th>
           </tr></thead>
           <tbody>
-          {% for item in leases %}
+          {% for item in result.items %}
             <tr>
               <td><strong>{{ item.device_name or item.lease.hostname or t("empty") }}</strong></td>
               <td><code>{{ item.lease.ip_address }}</code></td>
+              {% if selected_subnet is none %}<td>{{ item.subnet.name }} <small>{{ item.subnet.prefix }}</small></td>{% endif %}
               <td><code>{{ item.lease.mac_address or t("empty") }}</code></td>
               <td>{{ item.vendor or t("unknown") }}</td>
               <td><time datetime="{{ item.lease.expires_at.isoformat() }}">{{ item.lease.expires_at.strftime("%Y-%m-%d %H:%M") }}</time></td>
@@ -59,13 +69,13 @@
         </table>
       </div>
     </section>
-  {% endfor %}
+  {% endif %}
 
   {% if result.pages > 1 %}
     <nav class="pagination" aria-label="Pagination">
-      {% if result.page > 1 %}<a href="/leases?{{ {'q': query, 'page': result.page - 1} | urlencode }}">← {{ t("previous") }}</a>{% endif %}
+      {% if result.page > 1 %}<a href="{{ lease_url(query, selected_subnet, result.page - 1) }}">← {{ t("previous") }}</a>{% endif %}
       <span>{{ t("page") }} {{ result.page }} {{ t("of") }} {{ result.pages }}</span>
-      {% if result.page < result.pages %}<a href="/leases?{{ {'q': query, 'page': result.page + 1} | urlencode }}">{{ t("next") }} →</a>{% endif %}
+      {% if result.page < result.pages %}<a href="{{ lease_url(query, selected_subnet, result.page + 1) }}">{{ t("next") }} →</a>{% endif %}
     </nav>
   {% endif %}
   <p class="refreshed">{{ t("refreshed") }}: {{ snapshot.snapshot.refreshed_at.strftime("%Y-%m-%d %H:%M:%S %Z") }}</p>

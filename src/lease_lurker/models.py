@@ -43,4 +43,5 @@ class LeaseView:
 @dataclass(frozen=True, slots=True)
 class LeaseSnapshot:
     leases: tuple[LeaseView, ...]
+    subnets: tuple[Subnet, ...]
     refreshed_at: datetime

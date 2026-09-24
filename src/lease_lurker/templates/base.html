@@ -4,16 +4,31 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ t("app_title") }}</title>
+    <script>
+      try {
+        const theme = localStorage.getItem("lease-lurker-theme");
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+      } catch (_) {}
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+    <script src="{{ url_for('static', path='/theme.js') }}" defer></script>
   </head>
   <body>
     <header class="site-header">
       <a class="brand" href="/">Lease<span>Lurker</span></a>
-      <nav aria-label="{{ t('language') }}">
-        <a href="/locale/de" lang="de"{% if locale == "de" %} aria-current="page"{% endif %}>DE</a>
-        <span aria-hidden="true">·</span>
-        <a href="/locale/en" lang="en"{% if locale == "en" %} aria-current="page"{% endif %}>EN</a>
-      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle" type="button"
+                aria-label="{{ t('theme_toggle') }}" aria-pressed="false"
+                data-light-label="{{ t('theme_light') }}"
+                data-dark-label="{{ t('theme_dark') }}">
+          <span aria-hidden="true">◐</span>
+        </button>
+        <nav aria-label="{{ t('language') }}">
+          <a href="/locale/de" lang="de"{% if locale == "de" %} aria-current="page"{% endif %}>DE</a>
+          <span aria-hidden="true">·</span>
+          <a href="/locale/en" lang="en"{% if locale == "en" %} aria-current="page"{% endif %}>EN</a>
+        </nav>
+      </div>
     </header>
     <main>{% block content %}{% endblock %}</main>
     <footer>LeaseLurker · Read-only DHCP discovery</footer>
