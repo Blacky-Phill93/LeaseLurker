@@ -32,7 +32,7 @@ def make_lease(
     now: datetime,
     *,
     hostname: str = "pc-042.example.test",
-    mac: str = "00:11:22:33:44:55",
+    mac: str | None = "00:11:22:33:44:55",
     subnet_id: int = 1,
     state: int = 0,
     lifetime: int = 3600,

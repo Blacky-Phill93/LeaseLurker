@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 class Lease:
     ip_address: str
     hostname: str
-    mac_address: str
+    mac_address: str | None
     subnet_id: int
     starts_at: datetime
     valid_lifetime: timedelta

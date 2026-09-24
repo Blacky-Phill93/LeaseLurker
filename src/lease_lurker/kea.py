@@ -186,26 +186,33 @@ class KeaProvider:
         if not isinstance(items, list):
             raise KeaError("Kea lease list is invalid")
         leases: list[Lease] = []
-        try:
-            for item in items:
+        invalid_entries = 0
+        for item in items:
+            try:
                 if not isinstance(item, dict):
                     raise TypeError
                 state = int(item.get("state", 0))
                 if state != 0:
                     continue
-                leases.append(
-                    Lease(
-                        ip_address=str(item["ip-address"]),
-                        hostname=str(item.get("hostname", "")).rstrip("."),
-                        mac_address=normalize_mac(str(item["hw-address"])),
-                        subnet_id=int(item["subnet-id"]),
-                        starts_at=datetime.fromtimestamp(int(item["cltt"]), UTC),
-                        valid_lifetime=timedelta(seconds=int(item["valid-lft"])),
-                        state=state,
-                    )
+                raw_mac = str(item.get("hw-address", "")).strip()
+                lease = Lease(
+                    ip_address=str(item["ip-address"]),
+                    hostname=str(item.get("hostname", "")).rstrip("."),
+                    mac_address=normalize_mac(raw_mac) if raw_mac else None,
+                    subnet_id=int(item["subnet-id"]),
+                    starts_at=datetime.fromtimestamp(int(item["cltt"]), UTC),
+                    valid_lifetime=timedelta(seconds=int(item["valid-lft"])),
+                    state=state,
                 )
-        except (KeyError, TypeError, ValueError, OSError) as exc:
-            raise KeaError("Kea lease entry is invalid") from exc
+                _ = lease.expires_at
+                leases.append(lease)
+            except KeyError, TypeError, ValueError, OSError, OverflowError:
+                invalid_entries += 1
+        if invalid_entries:
+            LOGGER.warning(
+                "Skipped %d invalid active lease entries returned by Kea",
+                invalid_entries,
+            )
         return leases
 
     async def is_reachable(self) -> bool:

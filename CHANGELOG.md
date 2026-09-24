@@ -6,6 +6,17 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-09-24
+
+### Behoben
+
+- Aktive Kea-Leases ohne Hardwareadresse bleiben anhand von Hostname und
+  IP-Adresse sichtbar, ohne einen HTTP-503-Fehler auszulösen.
+- Fehlerhafte einzelne Lease-Einträge werden übersprungen und als Anzahl
+  protokolliert, anstatt den gesamten Snapshot zu verwerfen.
+- Fehler beim Aktualisieren eines Snapshots werden mit ihrer tatsächlichen
+  Ursache protokolliert und sind dadurch diagnostizierbar.
+
 ## [0.1.4] - 2026-09-08
 
 ### Behoben
@@ -60,7 +71,8 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 - Non-Root-Container, Compose-Konfiguration und lokaler Kea-Entwicklungsmock.
 - GitHub-CI für Formatierung, Linting, Typprüfung, Tests, Security und Image-Build.
 
-[Unreleased]: https://github.com/Phill93/LeaseLurker/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/Phill93/LeaseLurker/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/Phill93/LeaseLurker/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Phill93/LeaseLurker/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Phill93/LeaseLurker/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Phill93/LeaseLurker/compare/v0.1.1...v0.1.2

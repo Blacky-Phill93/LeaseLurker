@@ -49,7 +49,7 @@
             <tr>
               <td><strong>{{ item.device_name or item.lease.hostname or t("empty") }}</strong></td>
               <td><code>{{ item.lease.ip_address }}</code></td>
-              <td><code>{{ item.lease.mac_address }}</code></td>
+              <td><code>{{ item.lease.mac_address or t("empty") }}</code></td>
               <td>{{ item.vendor or t("unknown") }}</td>
               <td><time datetime="{{ item.lease.expires_at.isoformat() }}">{{ item.lease.expires_at.strftime("%Y-%m-%d %H:%M") }}</time></td>
               <td>{{ item.lease.expires_at | remaining(now) }}</td>

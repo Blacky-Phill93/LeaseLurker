@@ -15,6 +15,7 @@ async def test_snapshot_filters_and_enriches(settings, now) -> None:
     provider = FakeProvider(
         [
             make_lease(now),
+            make_lease(now, hostname="client-id-only", mac=None),
             make_lease(now, subnet_id=2),
             make_lease(now, hostname="expired", lifetime=-1),
             make_lease(now, hostname="reclaimed", state=1),
@@ -28,9 +29,11 @@ async def test_snapshot_filters_and_enriches(settings, now) -> None:
         clock=lambda: now,
     )
     result = await service.snapshot()
-    assert len(result.snapshot.leases) == 1
+    assert len(result.snapshot.leases) == 2
     assert result.snapshot.leases[0].subnet.name == "Office"
     assert result.snapshot.leases[0].vendor == "Example Vendor"
+    assert result.snapshot.leases[1].lease.mac_address is None
+    assert result.snapshot.leases[1].vendor is None
     assert provider.calls == 1
     assert (await service.snapshot()).snapshot is result.snapshot
 

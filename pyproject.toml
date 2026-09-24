@@ -1,6 +1,6 @@
 [project]
 name = "lease-lurker"
-version = "0.1.4"
+version = "0.1.5"
 description = "Read-only web interface for discovering active DHCP leases"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"

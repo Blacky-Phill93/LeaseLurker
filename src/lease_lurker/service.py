@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -12,6 +13,8 @@ from lease_lurker.models import LeaseSnapshot, LeaseView, Subnet
 from lease_lurker.providers import DeviceNameResolver, DhcpLeaseProvider
 from lease_lurker.settings import Settings
 from lease_lurker.vendor import VendorLookup
+
+LOGGER = logging.getLogger(__name__)
 
 
 class SnapshotUnavailableError(RuntimeError):
@@ -67,6 +70,7 @@ class LeaseService:
             try:
                 snapshot = await self._build_snapshot(now)
             except Exception as exc:
+                LOGGER.exception("Kea lease snapshot refresh failed")
                 if self._snapshot is None:
                     raise SnapshotUnavailableError(
                         "No lease snapshot is available"
@@ -119,8 +123,16 @@ class LeaseService:
                 LeaseView(
                     lease=lease,
                     subnet=subnets[lease.subnet_id],
-                    vendor=self._vendors.lookup(lease.mac_address),
-                    device_name=self._device_names.resolve(lease.mac_address),
+                    vendor=(
+                        self._vendors.lookup(lease.mac_address)
+                        if lease.mac_address
+                        else None
+                    ),
+                    device_name=(
+                        self._device_names.resolve(lease.mac_address)
+                        if lease.mac_address
+                        else None
+                    ),
                 )
             )
         views.sort(
@@ -141,6 +153,7 @@ class LeaseService:
                 if (len(cleaned) >= 2 and cleaned in view.lease.hostname.casefold())
                 or (
                     len(mac_fragment) >= 4
+                    and view.lease.mac_address is not None
                     and mac_fragment in view.lease.mac_address.replace(":", "")
                 )
             )
