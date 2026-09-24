@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/leaselurker-icon.png" alt="LeaseLurker-Icon: Der Lurker" width="140" height="140">
+</p>
+
 # LeaseLurker
 
 LeaseLurker ist ein ausschließlich lesendes Webinterface für aktive IPv4-Leases

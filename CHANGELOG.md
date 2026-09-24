@@ -6,6 +6,10 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- App-Icon (Lurker) als Favicon, Apple-Touch-Icon und README-Grafik.
+
 ## [0.2.0] - 2026-09-24
 
 ### Hinzugefügt
