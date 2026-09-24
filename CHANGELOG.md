@@ -9,6 +9,8 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - App-Icon (Lurker) als Favicon, Apple-Touch-Icon und README-Grafik.
+- Icon-Herkunft im README: mit Gemini 3.1 Flash Image (Google) generiert, über die
+  MIT-Lizenz des Projekts freigegeben.
 
 ## [0.2.0] - 2026-09-24
 

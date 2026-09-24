@@ -174,6 +174,7 @@ startet das ausgelieferte Image genau einen Uvicorn-Prozess.
 - **Copyright-Inhaber:** Karlsruher Institut für Technologie (KIT)
 - **Urheber:** Daniel Bacher
 - **Lizenz:** MIT License, siehe [LICENSE](LICENSE)
+- **App-Icon:** Mit dem Bild-Modell Gemini 3.1 Flash Image (Google) generiert; Entwurf (Prompt, Zuschnitt) durch Daniel Bacher. Das Icon ist über die MIT-Lizenz des Projekts freigegeben.
 
 Copyright © 2026 Karlsruher Institut für Technologie (KIT). LeaseLurker darf
 unter den Bedingungen der MIT-Lizenz verwendet, verändert und weitergegeben
