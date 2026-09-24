@@ -22,7 +22,10 @@ ENV PATH="/opt/lease-lurker/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     LEASELURKER_CONFIG=/etc/lease-lurker/config.yaml
 
-RUN python -m pip uninstall --yes msgpack setuptools pip && \
+RUN apt-get update && \
+    apt-get upgrade --yes && \
+    rm -rf /var/lib/apt/lists/* && \
+    python -m pip uninstall --yes msgpack setuptools pip && \
     addgroup --system lease-lurker && \
     adduser --system --ingroup lease-lurker lease-lurker
 COPY --from=builder /opt/lease-lurker /opt/lease-lurker

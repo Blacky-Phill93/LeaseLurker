@@ -6,6 +6,13 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-09-24
+
+### Sicherheit
+
+- Debian-Laufzeitpakete werden während des Container-Builds auf die aktuellen
+  Security-Revisionsstände aktualisiert.
+
 ## [0.1.5] - 2026-09-24
 
 ### Behoben
@@ -71,7 +78,8 @@ und die Versionierung an [Semantic Versioning](https://semver.org/lang/de/).
 - Non-Root-Container, Compose-Konfiguration und lokaler Kea-Entwicklungsmock.
 - GitHub-CI für Formatierung, Linting, Typprüfung, Tests, Security und Image-Build.
 
-[Unreleased]: https://github.com/Phill93/LeaseLurker/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/Phill93/LeaseLurker/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/Phill93/LeaseLurker/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Phill93/LeaseLurker/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Phill93/LeaseLurker/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Phill93/LeaseLurker/compare/v0.1.2...v0.1.3
